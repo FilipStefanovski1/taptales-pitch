@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 256" width="1000" height="256">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@800&amp;display=swap'); text{font-family:'Fira Sans','Helvetica Neue',Arial,sans-serif;font-weight:800;letter-spacing:-0.03em}</style>
+  <!-- plinth: cap, column, base -->
+  <rect x="88" y="150" width="80" height="12" rx="2" fill="#2f4550"/>
+  <rect x="98" y="162" width="60" height="50" fill="#2f4550"/>
+  <rect x="80" y="212" width="96" height="16" rx="3" fill="#2f4550"/>
+  <!-- bust -->
+  <circle cx="128" cy="86" r="24" fill="#a8722e"/>
+  <path d="M92 150c0-22 16-34 36-34s36 12 36 34z" fill="#a8722e"/>
+  <!-- speaks -->
+  <path d="M166 62a34 34 0 0 1 0 48" fill="none" stroke="#b8dbd9" stroke-width="11" stroke-linecap="round"/>
+  <path d="M184 40a64 64 0 0 1 0 92" fill="none" stroke="#b8dbd9" stroke-width="11" stroke-linecap="round" opacity="0.65"/>
+  <text x="250" y="176" font-size="150" fill="#000">Tap<tspan fill="#2f4550">Tales</tspan></text>
+</svg>

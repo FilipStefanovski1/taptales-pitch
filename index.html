@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f9">
+<link rel="icon" href="logo/taptales-icon-192.png">
+<link rel="apple-touch-icon" href="logo/taptales-icon-192.png">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>taptales Pitch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700;800&display=swap">
+<style>
+  /* Layout: one full-screen slide per idea, app palette (slate ink on pale ground), text does the work; one animated object per slide. */
+  :root {
+    /* Palette taken from the TapTales app (web/src/index.css): ground, ink, slate accent, pale-teal wash */
+    --bg: #f4f4f9;
+    --bg-2: #e6eaf0;
+    --fg: #000000;
+    --muted: #586f7c;
+    --bronze: #2f4550;
+    --patina: #586f7c;
+    --wash: #b8dbd9;
+    --line: rgba(47, 69, 80, 0.16);
+    /* Same face as the app: Fira Sans for everything */
+    --display: "Fira Sans", "Helvetica Neue", Arial, sans-serif;
+    --body: "Fira Sans", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    overflow: hidden;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  .deck {
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .deck::-webkit-scrollbar { display: none; }
+
+  .slide {
+    position: relative;
+    min-height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    padding-block: clamp(24px, 5vh, 56px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .slide__inner {
+    grid-row: 2;
+    width: min(100%, 1100px);
+    margin-inline: auto;
+    display: grid;
+    gap: clamp(20px, 4vh, 40px);
+    align-items: center;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 820px) {
+    .slide__inner.has-figure { grid-template-columns: 1.1fr 0.9fr; gap: 64px; }
+    .slide__inner.has-figure.figure-left { grid-template-columns: 0.9fr 1.1fr; }
+    .slide__inner.has-figure.figure-left .text { order: 2; }
+  }
+
+  .eyebrow {
+    font-family: var(--body);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bronze);
+    margin: 0 0 clamp(14px, 2.4vh, 24px);
+  }
+  h1, h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: clamp(3.2rem, 11vw, 9rem); }
+  h2 { font-size: clamp(2.3rem, 6.4vw, 5.6rem); }
+  .sub {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.25rem, 2.6vw, 2.1rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    margin: clamp(14px, 2.4vh, 26px) 0 0;
+    text-wrap: balance;
+    max-width: 24ch;
+  }
+  .logo { width: clamp(96px, 17vh, 170px); height: auto; display: block; margin: 0 auto clamp(10px, 2vh, 20px); }
+  .slide.active .logo { animation: pop 0.7s cubic-bezier(0.3, 1.4, 0.4, 1) both; }
+  .accent { color: var(--bronze); }
+  .bronze-word { color: #a8722e; }
+  .green { color: var(--patina); }
+
+  /* Reveal: lines rise out of a mask when a slide becomes active. Visible at rest. */
+  .line { display: block; overflow: hidden; }
+  .line > span { display: inline-block; }
+  .slide.active .line > span { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both; }
+  .slide.active .line:nth-child(2) > span { animation-delay: 0.1s; }
+  .slide.active .line:nth-child(3) > span { animation-delay: 0.2s; }
+  .slide.active .sub { animation: fade 0.8s 0.45s ease both; }
+  .slide.active .eyebrow { animation: fade 0.6s ease both; }
+  @keyframes rise { from { transform: translateY(110%); } to { transform: none; } }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .figure { display: grid; place-items: center; min-width: 0; }
+  .figure svg { width: 100%; height: auto; max-width: 440px; overflow: visible; }
+
+  /* Slide 1: title with a slow tap ripple behind it */
+  .ripple-bg {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    display: grid; place-items: center;
+  }
+  .ripple-bg i {
+    position: absolute; width: 42vmin; height: 42vmin; border-radius: 50%;
+    border: 1px solid var(--bronze); opacity: 0;
+  }
+  .slide.active .ripple-bg i { animation: ripple 4.5s ease-out infinite; }
+  .ripple-bg i:nth-child(2) { animation-delay: 1.5s !important; }
+  .ripple-bg i:nth-child(3) { animation-delay: 3s !important; }
+  @keyframes ripple { 0% { transform: scale(0.4); opacity: 0.55; } 100% { transform: scale(3); opacity: 0; } }
+
+  /* Slide 2: a grid of 127 marks, almost all dimmed */
+  .marks { display: grid; grid-template-columns: repeat(16, 1fr); gap: 7px; width: 100%; max-width: 440px; }
+  .marks i { aspect-ratio: 1; border-radius: 50%; background: var(--wash); transform: scale(0.6); opacity: 0; }
+  .slide.active .marks i { animation: pop 0.5s cubic-bezier(0.3, 1.4, 0.4, 1) both; }
+  .marks i.lit { background: var(--bronze); }
+
+  /* Slide 4: phone meets plaque, pulse rings */
+  .tap-rings circle.ring { stroke: var(--bronze); fill: none; opacity: 0; transform-origin: 220px 150px; }
+  .slide.active .tap-rings circle.ring { animation: ring 2.4s ease-out infinite; }
+  .slide.active .tap-rings circle.ring:nth-of-type(2) { animation-delay: 0.8s; }
+  .slide.active .tap-rings circle.ring:nth-of-type(3) { animation-delay: 1.6s; }
+  @keyframes ring { 0% { transform: scale(0.3); opacity: 0.8; } 100% { transform: scale(1.6); opacity: 0; } }
+  .photo .rings i { transform-origin: center; }
+  .phone { transform: translateY(40px); opacity: 0; }
+  .slide.active .phone { animation: phoneIn 1.1s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes phoneIn { to { transform: none; opacity: 1; } }
+
+  /* Slide 5: voice bars */
+  .bars { display: flex; align-items: center; gap: 10px; height: 160px; }
+  .bars i { width: 10px; border-radius: 6px; background: var(--patina); height: 80%; transform: scaleY(0.25); transform-origin: bottom; }
+  .slide.active .bars i { animation: bar 1.2s ease-in-out infinite alternate; }
+  @keyframes bar { from { transform: scaleY(0.18); } to { transform: scaleY(var(--h, 1)); } }
+
+  /* Slide 6: collection tiles filling in */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: 100%; max-width: 400px; }
+  .tiles i { aspect-ratio: 1; border-radius: 14px; background: #ffffff; border: 1px solid var(--line); opacity: 0; }
+  .slide.active .tiles i { animation: pop 0.5s cubic-bezier(0.3, 1.4, 0.4, 1) both; }
+  .tiles i.found { background: linear-gradient(145deg, var(--bronze), var(--patina)); border-color: transparent; }
+  @keyframes pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+
+  /* Slide 7: central Skopje, five courses through the statues */
+  .centre { width: 100%; max-width: 560px; display: grid; gap: 14px; justify-items: center; }
+  .centre svg { width: min(100%, 60vh); max-width: 560px; max-height: none; height: auto; aspect-ratio: 1; border-radius: 50%; background: #ffffff; box-shadow: 0 8px 28px rgba(47, 69, 80, 0.18), 0 1px 2px rgba(47, 69, 80, 0.08); }
+  .cm-park { fill: #dce8e6; stroke: none; }
+  .cm-castle { fill: #e0e4e9; stroke: #cbd3db; stroke-width: 1; }
+  .cm-river { fill: none; stroke: var(--wash); stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+  .cm-road { fill: none; stroke: #e3e7ec; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cm-ped { fill: none; stroke: #e9ecf0; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  .cm-statue { fill: #ffffff; stroke: var(--muted); stroke-width: 1.2; }
+  .cm-route { fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+  .cm-stop { stroke: #ffffff; stroke-width: 1.5; opacity: 0; }
+  .slide.active .cm-stop { animation: pop 0.4s cubic-bezier(0.3, 1.4, 0.4, 1) both; }
+  .slide.active .cm-route { animation: course var(--len-s, 2s) var(--start, 0s) ease-in-out both; }
+  @keyframes course { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+  .cm-square { fill: var(--fg); }
+  .cm-callout { opacity: 0; }
+  .slide.active .cm-callout { animation: pop 0.5s cubic-bezier(0.3, 1.4, 0.4, 1) both; transform-box: fill-box; transform-origin: center; }
+  .cm-leader { stroke: var(--fg); stroke-width: 1.2; }
+  .cm-major { fill: var(--fg); stroke: #ffffff; stroke-width: 2; }
+  .cm-bubble { fill: #ffffff; filter: drop-shadow(0 3px 6px rgba(47, 69, 80, 0.3)); }
+  .cm-label { font-family: var(--body); font-size: 11px; font-weight: 500; fill: var(--fg); paint-order: stroke; stroke: #ffffff; stroke-width: 3px; stroke-linejoin: round; }
+  .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: center; font-size: 0.85rem; color: var(--muted); }
+  .legend li { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .legend i { width: 18px; height: 4px; border-radius: 2px; background: var(--c); }
+  .legend b { font-weight: 500; color: var(--fg); }
+
+  /* Slide 10: map of Macedonia as dots, Skopje lit first */
+  .mk-outline { fill: #ffffff; stroke: var(--bronze); stroke-width: 1.6; stroke-linejoin: round; stroke-dasharray: 2600; stroke-dashoffset: 2600; }
+  .slide.active .mk-outline { animation: outline 2s ease-out both; }
+  @keyframes outline { to { stroke-dashoffset: 0; } }
+  .mk-road { fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+  .mk-road.primary { stroke: rgba(47,69,80,0.18); stroke-width: 0.8; }
+  .mk-road.trunk { stroke: rgba(47,69,80,0.35); stroke-width: 1.2; }
+  .mk-road.motorway { stroke: var(--bronze); stroke-width: 1.8; opacity: 0; }
+  .slide.active .mk-road { animation: fade 1.2s 1s ease both; }
+  .slide.active .mk-road.motorway { animation: fade 1.2s 1.3s ease both; }
+  .mk-town { opacity: 0; }
+  .slide.active .mk-town { animation: fade 0.5s ease both; }
+  .mk-town circle { fill: #ffffff; stroke: var(--bronze); stroke-width: 1.4; }
+  .mk-town text { font-family: var(--body); font-size: 9.5px; fill: var(--muted); letter-spacing: 0.02em; paint-order: stroke; stroke: #ffffff; stroke-width: 3px; stroke-linejoin: round; }
+  .mk-town.city circle { fill: var(--bronze); }
+  .mk-town.city text { font-size: 11.5px; font-weight: 500; fill: var(--fg); }
+  .mk-town.skopje circle { fill: var(--fg); stroke: var(--wash); stroke-width: 4; }
+  .mk-town.skopje text { font-family: var(--display); font-weight: 800; font-size: 17px; fill: var(--fg); }
+
+  /* Photos */
+  .photo { position: relative; width: 100%; max-width: 420px; aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; background: var(--bg-2); box-shadow: 0 8px 28px rgba(47, 69, 80, 0.18), 0 1px 2px rgba(47, 69, 80, 0.08); }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.85) contrast(1.02); transform: scale(1.06); }
+  .slide.active .photo img { animation: settle 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes settle { from { transform: scale(1.14); opacity: 0; } to { transform: scale(1.06); opacity: 1; } }
+  .photo::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px var(--line); border-radius: inherit; pointer-events: none; }
+  .photo .credit { position: absolute; left: 12px; bottom: 10px; font-size: 0.75rem; letter-spacing: 0.04em; color: rgba(244,244,249,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+  .photo .overlay { position: absolute; inset: 0; display: grid; place-items: center; }
+  .photo .bars { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; justify-content: center; padding-bottom: 28px; background: linear-gradient(to top, rgba(15,14,12,0.85), transparent); }
+  .photo .bars i { background: #f4f4f9; }
+  .photo .rings { position: absolute; inset: 0; display: grid; place-items: center; }
+  .photo .rings i { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid var(--wash); opacity: 0; }
+  .slide.active .photo .rings i { animation: ring 2.4s ease-out infinite; }
+  .photo .rings i:nth-child(2) { animation-delay: 0.8s !important; }
+  .photo .rings i:nth-child(3) { animation-delay: 1.6s !important; }
+  .photo .rings.small { inset: auto; width: 30%; aspect-ratio: 1; transform: translate(-50%, -50%); }
+  .photo .rings.small i { width: 100%; border-width: 2px; }
+  .photo .rings.small b { width: 10px; height: 10px; box-shadow: 0 0 0 4px rgba(184,219,217,0.45); }
+  .photo .rings b { width: 14px; height: 14px; border-radius: 50%; background: var(--wash); box-shadow: 0 0 0 6px rgba(184,219,217,0.35); }
+  .tiles i.found { background-size: cover; background-position: center; }
+  .tiles i.pending { background-size: cover; background-position: center; filter: grayscale(1) contrast(0.85); opacity: 0.38; border-color: transparent; }
+
+  /* Full-bleed backgrounds for title, bridge and close */
+  .bleed { position: absolute; inset: 0; z-index: -2; }
+  .bleed img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 1; filter: saturate(0.6); transform: scale(1.04); }
+  .slide.active .bleed img { animation: drift 14s ease-in-out both; }
+  @keyframes drift { from { transform: scale(1.12); } to { transform: scale(1.04); } }
+  .bleed::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(244,244,249,0.72), rgba(244,244,249,0.96)); }
+  .bleed-credit { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); top: 14px; font-size: 0.75rem; letter-spacing: 0.04em; color: var(--muted); }
+  .credits { position: absolute; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.03em; padding-inline: 16px; }
+
+  .map-slide .figure svg { max-width: 760px; max-height: 58vh; }
+  @media (min-width: 820px) { .slide__inner.has-figure.map-slide { grid-template-columns: 0.7fr 1.3fr; } .slide__inner.has-figure.map-slide.figure-left { grid-template-columns: 1.3fr 0.7fr; } }
+
+  /* Support, investment, roadmap */
+  .doors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; width: 100%; max-width: 460px; }
+  .doors li { display: grid; gap: 4px; padding: 16px 18px; border-radius: 16px; background: #ffffff; border: 1px solid var(--line); border-left: 4px solid var(--bronze); opacity: 0; }
+  .doors b { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .doors span { font-size: 0.92rem; color: var(--muted); line-height: 1.35; }
+  .doors.four { gap: 10px; }
+  .doors.four li { padding: 12px 16px; }
+  .doors.four b { font-size: 1.05rem; }
+  .doors.four span { font-size: 0.86rem; }
+  .slide.active .doors li:nth-child(4) { animation-delay: 0.75s; }
+  .slide.active .doors li { animation: fade 0.6s ease both; }
+  .slide.active .doors li:nth-child(2) { animation-delay: 0.25s; }
+  .slide.active .doors li:nth-child(3) { animation-delay: 0.5s; }
+
+  .cost { width: 100%; max-width: 460px; display: grid; }
+  .cost .row { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 1rem; color: var(--muted); opacity: 0; }
+  .cost .row b { font-variant-numeric: tabular-nums; color: var(--fg); font-weight: 500; white-space: nowrap; }
+  .cost .row.total { border-bottom: 0; border-top: 2px solid var(--bronze); margin-top: 6px; padding-top: 16px; color: var(--fg); }
+  .cost .row.total b { font-family: var(--display); font-weight: 800; font-size: 1.6rem; color: var(--bronze); }
+  .slide.active .cost .row { animation: fade 0.5s ease both; }
+  .slide.active .cost .row:nth-child(2) { animation-delay: 0.15s; }
+  .slide.active .cost .row:nth-child(3) { animation-delay: 0.3s; }
+  .slide.active .cost .row:nth-child(4) { animation-delay: 0.45s; }
+  .slide.active .cost .row:nth-child(5) { animation-delay: 0.8s; }
+
+  .timeline { list-style: none; margin: clamp(28px, 6vh, 56px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--wash); }
+  .timeline::after { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--bronze); transform: scaleX(0); transform-origin: left; }
+  .slide.active .timeline::after { animation: grow 2.2s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes grow { to { transform: scaleX(1); } }
+  .timeline li { display: grid; gap: 8px; align-content: start; min-width: 0; opacity: 0; }
+  .timeline i { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; border: 3px solid var(--bronze); box-sizing: border-box; }
+  .timeline li:last-child i { background: var(--bronze); box-shadow: 0 0 0 5px var(--wash); }
+  .timeline b { font-family: var(--display); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; }
+  .timeline span { font-size: 0.92rem; color: var(--muted); line-height: 1.35; text-wrap: balance; }
+  .slide.active .timeline li { animation: fade 0.5s ease both; }
+  .slide.active .timeline li:nth-child(2) { animation-delay: 0.5s; }
+  .slide.active .timeline li:nth-child(3) { animation-delay: 1s; }
+  .slide.active .timeline li:nth-child(4) { animation-delay: 1.5s; }
+  .slide.active .timeline li:nth-child(5) { animation-delay: 2s; }
+  @media (max-width: 819px) {
+    .timeline { grid-template-columns: 1fr; gap: 18px; padding-left: 28px; }
+    .timeline::before, .timeline::after { left: 7px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; }
+    .timeline::after { transform: scaleY(0); transform-origin: top; }
+    @keyframes grow { to { transform: scaleY(1); } }
+    .timeline li { position: relative; }
+    .timeline i { position: absolute; left: -28px; top: 2px; }
+  }
+
+  /* Chrome: progress + counter + nav hint */
+  .progress { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; height: 2px; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--bronze); transition: transform 0.4s ease; z-index: 5; }
+  .counter {
+    position: fixed; z-index: 5;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    right: calc(22px + env(safe-area-inset-right, 0px));
+    font-size: 0.8rem; letter-spacing: 0.08em; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .brand {
+    position: fixed; z-index: 5;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    left: calc(22px + env(safe-area-inset-left, 0px));
+    font-family: var(--display); font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--muted);
+  }
+  .nav {
+    position: fixed; z-index: 5; display: flex; gap: 6px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    left: 50%; transform: translateX(-50%);
+  }
+  .nav button {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+    background: transparent; color: var(--fg); cursor: pointer; font-size: 1rem;
+  }
+  .nav button:hover { border-color: var(--bronze); background: var(--wash); }
+  .nav button:focus-visible { outline: 2.5px solid var(--bronze); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck { scroll-behavior: auto; }
+    .slide.active *, .slide.active *::before, .slide.active *::after { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .ripple-bg i { display: none; }
+  }
+</style>
+
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="nav" aria-label="Slide navigation">
+  <button type="button" id="prev" aria-label="Previous slide">&larr;</button>
+  <button type="button" id="next" aria-label="Next slide">&rarr;</button>
+</div>
+
+<main class="deck" id="deck">
+
+  <!-- 1 Title -->
+  <section class="slide active" id="s1">
+    <div class="bleed" aria-hidden="true"><img src="photos/warrior.jpg" alt=""></div>
+    <span class="bleed-credit">Warrior on Horseback · Andrzej Wójtowicz, CC BY-SA 2.0</span>
+    <div class="ripple-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="slide__inner" style="text-align:center">
+      <div class="text">
+        <img class="logo" src="logo/taptales-column.png" alt="taptales column mark">
+        <h1><span class="line"><span>taptales</span></span></h1>
+        <p class="sub" style="margin-inline:auto">Tap a statue. Hear its story.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 Problem -->
+  <section class="slide" id="s2">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">The problem</p>
+        <h2><span class="line"><span>Skopje has 127 statues.</span></span><span class="line"><span>Most people can't name ten.</span></span></h2>
+      </div>
+      <div class="figure"><div class="marks" id="marks" aria-hidden="true"></div></div>
+    </div>
+  </section>
+
+  <!-- 3 Problem 2 -->
+  <section class="slide" id="s3">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">The problem</p>
+        <h2><span class="line"><span>A name. Two dates.</span></span><span class="line"><span>Not the <span class="bronze-word">story</span>.</span></span></h2>
+        <p class="sub">Who they were to us, nobody says.</p>
+      </div>
+      <div class="figure">
+        <figure class="photo" style="margin:0"><img src="photos/shoeshiner.jpg" alt="A tourist bends over the bronze Shoeshiner statue in Skopje"><span class="credit">Shoeshiner · Martin Hendrikx, CC BY 2.0</span></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 Solution -->
+  <section class="slide" id="s4">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">The idea</p>
+        <h2><span class="line"><span>Tap your phone</span></span><span class="line"><span>on the plaque.</span></span></h2>
+        <p class="sub">The statue tells you who it is.</p>
+      </div>
+      <div class="figure">
+        <figure class="photo" style="margin:0">
+          <img src="photos/tap-plaque.webp" alt="Saints Cyril and Methodius with a TapTales NFC plaque in front of the pedestal" style="object-position: 50% 80%">
+          <div class="rings small" aria-hidden="true" style="left: 49%; top: 76%"><i></i><i></i><i></i><b></b></div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 Voice -->
+  <section class="slide" id="s5">
+    <div class="slide__inner has-figure figure-left">
+      <div class="text">
+        <p class="eyebrow">Voice</p>
+        <h2><span class="line"><span>A voice reads</span></span><span class="line"><span>the story aloud.</span></span></h2>
+        <p class="sub">Macedonian, English, Turkish and more.</p>
+      </div>
+      <div class="figure">
+        <figure class="photo" style="margin:0">
+          <img src="photos/teresa.jpg" alt="Bronze statue of Mother Teresa in Skopje">
+          <div class="bars" id="bars" aria-hidden="true"></div>
+          <span class="credit">Mother Teresa · Mister No, CC BY 3.0</span>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 Collection -->
+  <section class="slide" id="s6">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">Collection</p>
+        <h2><span class="line"><span>Every tap joins</span></span><span class="line"><span>your <span class="accent">collection</span>.</span></span></h2>
+        <p class="sub">Explore more, collect more.</p>
+      </div>
+      <div class="figure"><div class="tiles" id="tiles" aria-hidden="true"></div></div>
+    </div>
+  </section>
+
+  <!-- 7 Map -->
+  <section class="slide" id="s7">
+    <div class="slide__inner has-figure figure-left map-slide">
+      <div class="text">
+        <p class="eyebrow">The map</p>
+        <h2><span class="line"><span>All 127</span></span><span class="line"><span>on one map.</span></span></h2>
+        <p class="sub">Five walking routes through the city.</p>
+      </div>
+      <div class="figure">
+        <div class="centre">
+          <svg viewBox="0 0 600 600" role="img" aria-label="Map of central Skopje with the five themed walking routes" id="centremap"></svg>
+          <ul class="legend" id="legend" aria-label="Routes"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 Art Bridge -->
+  <section class="slide" id="s8">
+    <div class="bleed" aria-hidden="true"><img src="photos/vojdan.jpg" alt=""></div>
+    <span class="bleed-credit">Vojdan Chernodrinski, Art Bridge · Rašo, CC BY-SA 3.0</span>
+    <div class="slide__inner">
+      <div class="text">
+        <p class="eyebrow">Start here</p>
+        <h2><span class="line"><span>The Art Bridge,</span></span><span class="line"><span>statue by statue.</span></span></h2>
+        <p class="sub">27 stories on one walk.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 How -->
+  <section class="slide" id="s9">
+    <div class="slide__inner">
+      <div class="text">
+        <p class="eyebrow">Under the hood</p>
+        <h2><span class="line"><span>Open data.</span></span><span class="line"><span>Works <span class="green">offline</span>.</span></span></h2>
+        <p class="sub">A web app, no download needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 Support -->
+  <section class="slide" id="s10">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">Who we need</p>
+        <h2><span class="line"><span>Plaques on monuments</span></span><span class="line"><span>need a <span class="accent">yes</span>.</span></span></h2>
+        <p class="sub">Three doors, one pilot to open them.</p>
+      </div>
+      <div class="figure">
+        <ul class="doors" aria-label="Support we need and how we get it">
+          <li><b>City of Skopje</b><span>permit to mount plaques &middot; we offer a free Art Bridge pilot</span></li>
+          <li><b>Cultural Heritage Office</b><span>approval for protected monuments &middot; non-invasive stick-on plaques</span></li>
+          <li><b>Tourism board &amp; sponsors</b><span>plaque funding &middot; a sponsor line on every plaque</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 Investment -->
+  <section class="slide" id="s11">
+    <div class="slide__inner has-figure figure-left">
+      <div class="text">
+        <p class="eyebrow">Investment</p>
+        <h2><span class="line"><span>Small money,</span></span><span class="line"><span>whole city covered.</span></span></h2>
+        <p class="sub">About &euro;20 per statue, all in.</p>
+      </div>
+      <div class="figure">
+        <div class="cost" aria-label="Cost breakdown for Skopje">
+          <div class="row"><span>127 NFC plaques, weatherproof</span><b>&euro;2,000</b></div>
+          <div class="row"><span>Mounting and replacements</span><b>&euro;600</b></div>
+          <div class="row"><span>Stories and audio, MK + EN</span><b>&euro;1,500</b></div>
+          <div class="row"><span>Hosting, first year</span><b>&euro;300</b></div>
+          <div class="row total"><span>Skopje, all 127</span><b>&asymp; &euro;4,400</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 Tourism -->
+  <section class="slide" id="s12">
+    <div class="slide__inner has-figure">
+      <div class="text">
+        <p class="eyebrow">Tourism</p>
+        <h2><span class="line"><span>People photograph</span></span><span class="line"><span>the statue.</span></span></h2>
+        <p class="sub">We make them remember it.</p>
+      </div>
+      <div class="figure">
+        <ul class="doors" aria-label="What this does for visitors">
+          <li><b>Longer walks</b><span>five routes pull visitors out of the square into the parks, the bazaar, the caf&eacute;s</span></li>
+          <li><b>A reason to come back</b><span>nobody collects 127 in an afternoon &middot; a half-finished collection is an unfinished trip</span></li>
+          <li><b>Zero friction</b><span>no app, no data plan, no guide &middot; one tap, in their language &middot; that is what ends up in the review</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 Who pays -->
+  <section class="slide" id="s13">
+    <div class="slide__inner has-figure figure-left">
+      <div class="text">
+        <p class="eyebrow">Who pays</p>
+        <h2><span class="line"><span>Four ways</span></span><span class="line"><span>to <span class="accent">fund</span> it.</span></span></h2>
+        <p class="sub">&euro;4,400 for all of Skopje. Plaques are a one&#8209;off, stories last.</p>
+      </div>
+      <div class="figure">
+        <ul class="doors four" aria-label="Funding sources">
+          <li><b>City of Skopje &amp; Centar</b><span>pilot from the culture budget &middot; city logo on every plaque &middot; the usage data is theirs</span></li>
+          <li><b>Tourism agency</b><span>national rollout &middot; taps, routes walked and time spent, reported monthly</span></li>
+          <li><b>Sponsors adopt a route</b><span>&euro;1,000 puts a name on 27 plaques on the most-walked bridge in the country</span></li>
+          <li><b>Heritage grants</b><span>EU and embassy culture calls for the other 33 towns &middot; open data, two languages</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 Roadmap -->
+  <section class="slide" id="s14">
+    <div class="slide__inner">
+      <div class="text">
+        <p class="eyebrow">Roadmap</p>
+        <h2><span class="line"><span>Art Bridge in a month.</span></span><span class="line"><span>Macedonia in <span class="accent">two years</span>.</span></span></h2>
+      </div>
+      <ol class="timeline" aria-label="Rollout timeline">
+        <li><i></i><b>Month 1</b><span>Art Bridge pilot, 27 statues</span></li>
+        <li><i></i><b>Month 3</b><span>City centre, 60 statues</span></li>
+        <li><i></i><b>Month 6</b><span>All of Skopje, 127</span></li>
+        <li><i></i><b>Year 1</b><span>Ohrid, Bitola, Prilep, Tetovo</span></li>
+        <li><i></i><b>Year 2</b><span>All 34 cities and towns</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 15 Vision -->
+  <section class="slide" id="s15">
+    <div class="slide__inner has-figure map-slide">
+      <div class="text">
+        <p class="eyebrow">Next</p>
+        <h2><span class="line"><span>Skopje first.</span></span><span class="line"><span>All of <span class="accent">Macedonia</span> next.</span></span></h2>
+      </div>
+      <div class="figure">
+        <svg viewBox="0 0 640 470" role="img" aria-label="Map of North Macedonia with all 34 cities and towns, Skopje highlighted" id="mkmap"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 Close -->
+  <section class="slide" id="s16">
+    <div class="bleed" aria-hidden="true"><img src="photos/justinian.jpg" alt=""></div>
+    <span class="bleed-credit">Justinian I · Pudelek (Marcin Szala), CC BY-SA 3.0</span>
+    <div class="ripple-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="slide__inner" style="text-align:center">
+      <div class="text">
+        <img class="logo" src="logo/taptales-column.png" alt="taptales column mark">
+        <h1><span class="line"><span>taptales</span></span></h1>
+        <p class="sub" style="margin-inline:auto">Go see. Tap. Listen.</p>
+      </div>
+    </div>
+    <p class="credits">Photos from Wikimedia Commons, credited on each slide; collection tiles by Zorica, Mister No, Yemc, Ra&scaron;o, Antidiskriminator, Lajmmoore, Avi1111, Tomislav Medak, Tashkoskim, 2z, Bojan9Spasovski (CC BY / CC BY-SA / public domain). Data: OpenStreetMap, Wikidata, Wikipedia.</p>
+  </section>
+
+</main>
+
+<script>
+  // Slide 2: 127 marks, 10 lit
+  (function () {
+    var box = document.getElementById('marks');
+    var lit = new Set([3, 17, 29, 44, 58, 71, 86, 99, 110, 123]);
+    for (var i = 0; i < 127; i++) {
+      var d = document.createElement('i');
+      d.style.animationDelay = (i * 9) + 'ms';
+      if (lit.has(i)) d.className = 'lit';
+      box.appendChild(d);
+    }
+  })();
+  // Slide 5: voice bars
+  (function () {
+    var box = document.getElementById('bars');
+    var hs = [40, 70, 95, 60, 85, 45, 100, 65, 80, 50, 90, 35];
+    hs.forEach(function (h, i) {
+      var b = document.createElement('i');
+      b.style.setProperty('--h', h / 100);
+      b.style.animationDelay = (i * 90) + 'ms';
+      box.appendChild(b);
+    });
+  })();
+  // Slide 6: 20 tiles, 7 found
+  (function () {
+    var box = document.getElementById('tiles');
+    var found = { 0: 'warrior', 1: 'cyril', 2: 'teresa', 3: 'shoeshiner', 4: 'justinian', 5: 'vojdan', 6: 'tap-plaque' };
+    var locked = ['pitu-guli', 'delcev-park', 'skanderbeg', 'samuel', 'gruev', 'karev', 'teskoto', 'liberators', 'karpos', 'lion', 'beggar', 'sandanski', 'philip'];
+    for (var i = 0; i < 20; i++) {
+      var d = document.createElement('i');
+      d.style.animationDelay = (120 + i * 60) + 'ms';
+      if (i in found) { d.className = 'found'; d.style.backgroundImage = 'url(photos/' + found[i] + (found[i] === 'tap-plaque' ? '.webp' : '.jpg') + ')'; }
+      else { d.className = 'pending'; d.style.backgroundImage = 'url(photos/' + locked[i - 7] + '.jpg)'; }
+      box.appendChild(d);
+    }
+  })();
+  // Slide 7: central Skopje from OpenStreetMap; the five courses ordered as in the app (nearest statue to Macedonia Square first, 2-opt), then routed along walkable streets (Dijkstra over OSM ways)
+  (function () {
+    var svg = document.getElementById('centremap'), legend = document.getElementById('legend');
+    var ns = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent) { var e = document.createElementNS(ns, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); (parent || svg).appendChild(e); return e; }
+    var themes = [
+      ['antiquity', 'Antiquity', '#a8722e'], ['faith', 'Letters and faith', '#2f4550'], ['revolution', 'Revolutionaries', '#b5483f'],
+      ['artists', 'Artists', '#6b4f8a'], ['everyday', 'Everyday Skopje', '#3f8f86'] ];
+    fetch('geo/centre_map.json?v=2').then(function (r) { return r.json(); }).then(function (m) {
+      var clip = el('clipPath', { id: 'cm-clip' }, el('defs', {}));
+      el('circle', { cx: 300, cy: 300, r: 300 }, clip);
+      var g = el('g', { 'clip-path': 'url(#cm-clip)' });
+      el('path', { d: m.parks, 'class': 'cm-park' }, g);
+      el('path', { d: m.castle, 'class': 'cm-castle' }, g);
+      m.river.forEach(function (d) { el('path', { d: d, 'class': 'cm-river' }, g); });
+      el('path', { d: m.roads, 'class': 'cm-road' }, g);
+      el('path', { d: m.peds, 'class': 'cm-ped' }, g);
+      m.statues.forEach(function (p) { el('circle', { cx: p[0], cy: p[1], r: 3, 'class': 'cm-statue' }, g); });
+      var t0 = 0.3;
+      themes.forEach(function (t) {
+        var pts = m.routes[t[0]]; if (!pts) return;
+        var d = (m.routePaths && m.routePaths[t[0]]) || ('M' + pts.map(function (p) { return p[0] + ' ' + p[1]; }).join(' L'));
+        var path = el('path', { d: d, 'class': 'cm-route', stroke: t[2] }, g);
+        var len = path.getTotalLength(), secs = Math.min(2.4, 0.6 + len / 900);
+        path.setAttribute('stroke-dasharray', len);
+        path.style.setProperty('--len', len);
+        path.style.setProperty('--len-s', secs + 's');
+        path.style.setProperty('--start', t0 + 's');
+        pts.forEach(function (p, i) {
+          var c = el('circle', { cx: p[0], cy: p[1], r: 4.5, fill: t[2], 'class': 'cm-stop' }, g);
+          c.style.animationDelay = (t0 + secs * (i / Math.max(1, pts.length - 1))) + 's';
+        });
+        var li = document.createElement('li'); li.style.setProperty('--c', t[2]);
+        li.innerHTML = '<i></i><b>' + t[1] + '</b> ' + pts.length;
+        legend.appendChild(li);
+        t0 += secs * 0.55;
+      });
+      el('circle', { cx: m.centre[0], cy: m.centre[1], r: 5, 'class': 'cm-square' }, g);
+      // five headline statues as photo bubbles sitting exactly on their position (OSM coordinates)
+      var majors = [
+        ['Warrior on Horseback', 'warrior', 302.4, 307.0, 'end', -26, 6],
+        ['Justinian I', 'justinian', 325.8, 267.9, 'start', 26, -2],
+        ['Cyril & Methodius', 'cyril', 427.1, 397.7, 'start', 26, 4],   // in front of the Parliament
+        ['Philip II', 'philip', 408.2, 204.3, 'start', 26, 4],
+        ['Mother Teresa', 'teresa', 281.0, 385.9, 'start', 26, 6] ];
+      var defs = svg.querySelector('defs'), R = 21;
+      majors.forEach(function (c, i) {
+        var cp = el('clipPath', { id: 'cp-' + c[1] }, defs);
+        el('circle', { cx: c[2], cy: c[3], r: R }, cp);
+        var grp = el('g', { 'class': 'cm-callout' });
+        grp.style.animationDelay = (4.2 + i * 0.25) + 's';
+        el('circle', { cx: c[2], cy: c[3], r: R + 3, 'class': 'cm-bubble' }, grp);
+        el('image', { href: 'photos/' + c[1] + '.jpg', x: c[2] - R, y: c[3] - R, width: 2 * R, height: 2 * R, preserveAspectRatio: 'xMidYMid slice', 'clip-path': 'url(#cp-' + c[1] + ')' }, grp);
+        var tx = el('text', { x: c[2] + c[5], y: c[3] + c[6], 'text-anchor': c[4], 'class': 'cm-label' }, grp);
+        tx.textContent = c[0];
+      });
+    });
+  })();
+
+  // Slide 10: North Macedonia from OpenStreetMap: border, main roads, all 34 cities and towns
+  (function () {
+    var svg = document.getElementById('mkmap');
+    var ns = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent) {
+      var e = document.createElementNS(ns, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      (parent || svg).appendChild(e); return e;
+    }
+    // label placement tweaks for towns that sit close together
+    var place = { 'Struga': ['end', -9, 4], 'Bogdanci': ['start', 9, 12], 'Vinica': ['start', 9, 12], 'Ko\u010dani': ['end', -9, -4], 'Kochani': ['end', -9, -4],
+      'Probishtip': ['end', -9, 11], 'Kratovo': ['start', 9, -3], 'Demir Kapija': ['start', 9, 11], 'Negotino': ['end', -9, 4], 'Kavadarci': ['end', -9, 10],
+      'Valandovo': ['start', 9, 11], 'Gevgelija': ['end', -9, 4], 'Tetovo': ['end', -9, 4], 'Gostivar': ['end', -9, 4], 'Debar': ['end', -9, 4],
+      'Ohrid': ['end', -9, 10], 'Resen': ['start', 9, 11], 'Berovo': ['start', 9, 4], 'Peh\u010devo': ['end', -9, -4], 'Del\u010devo': ['start', 9, -3],
+      'Makedonska Kamenica': ['start', 9, -4], 'Sveti Nikole': ['start', 9, -3], 'Veles': ['start', 9, 11], 'Kru\u0161evo': ['end', -9, 4], 'Demir Hisar': ['end', -9, 4] };
+    fetch('geo/mk_map.json').then(function (r) { return r.json(); }).then(function (m) {
+      el('path', { d: m.outline, 'class': 'mk-outline' });
+      el('path', { d: m.roads.primary, 'class': 'mk-road primary' });
+      el('path', { d: m.roads.trunk, 'class': 'mk-road trunk' });
+      el('path', { d: m.roads.motorway, 'class': 'mk-road motorway' });
+      m.towns.forEach(function (t, i) {
+        if (t.n === 'Kochani') t.n = 'Ko\u010dani';
+        var sk = t.n === 'Skopje', pl = place[t.n] || ['start', 9, 4];
+        var g = el('g', { 'class': 'mk-town' + (sk ? ' skopje' : t.c ? ' city' : '') });
+        g.style.animationDelay = (1.2 + i * 0.06) + 's';
+        el('circle', { cx: t.x, cy: t.y, r: sk ? 9 : t.c ? 4.5 : 3 }, g);
+        var tx = el('text', { x: t.x + (sk ? 15 : pl[1]), y: t.y + (sk ? 6 : pl[2]), 'text-anchor': sk ? 'start' : pl[0] }, g);
+        tx.textContent = t.n;
+      });
+    });
+  })();
+
+  // Navigation + active state
+  (function () {
+    var deck = document.getElementById('deck');
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var progress = document.getElementById('progress');
+    var current = 0;
+
+    function setActive(i) {
+      if (i === current && slides[i].classList.contains('active')) return;
+      slides.forEach(function (s, j) { s.classList.toggle('active', j === i); });
+      current = i;
+      progress.style.transform = 'scaleX(' + ((i + 1) / slides.length) + ')';
+      try { history.replaceState(null, '', '#' + slides[i].id); } catch (e) {}
+    }
+    function go(i) {
+      i = Math.max(0, Math.min(slides.length - 1, i));
+      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && e.intersectionRatio > 0.6) setActive(slides.indexOf(e.target));
+      });
+    }, { root: deck, threshold: [0.6] });
+    slides.forEach(function (s) { io.observe(s); });
+
+    document.getElementById('next').addEventListener('click', function () { go(current + 1); });
+    document.getElementById('prev').addEventListener('click', function () { go(current - 1); });
+    window.addEventListener('keydown', function (e) {
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].indexOf(e.key) > -1) { e.preventDefault(); go(current + 1); }
+      if (['ArrowLeft', 'ArrowUp', 'PageUp'].indexOf(e.key) > -1) { e.preventDefault(); go(current - 1); }
+      if (e.key === 'Home') go(0);
+      if (e.key === 'End') go(slides.length - 1);
+    });
+    // Tap on the right/left half of a slide advances/goes back (phones)
+    deck.addEventListener('click', function (e) {
+      if (e.target.closest('button, a')) return;
+      var x = e.clientX / window.innerWidth;
+      if (x > 0.7) go(current + 1); else if (x < 0.3) go(current - 1);
+    });
+
+    // Deep link
+    var h = (location.hash || '').replace('#', '');
+    var idx = slides.findIndex(function (s) { return s.id === h; });
+    if (idx > 0) {
+      var jump = function () {
+        deck.style.scrollBehavior = 'auto';
+        deck.scrollTop = slides[idx].offsetTop;
+        setActive(idx);
+        requestAnimationFrame(function () { deck.style.scrollBehavior = ''; });
+      };
+      jump();
+      requestAnimationFrame(jump);
+      window.addEventListener('load', function () { setTimeout(jump, 50); });
+    }
+  })();
+</script>
+
+</body>
+</html>
